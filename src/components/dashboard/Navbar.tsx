@@ -9,8 +9,7 @@ function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isOrgDropdownOpen, setIsOrgDropdownOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const { user } = useUserAuth();
-  const navigate = useNavigate();
+  const { user, SignOut } = useUserAuth();
 
   const organizations = [
     { id: 1, name: "My Organization", logo: "MO" },
@@ -258,13 +257,31 @@ function Navbar() {
               {isDropdownOpen && (
                 <div
                   ref={userDropdownRef}
-                  className="origin-top-right z-30 absolute right-0 mt-2 w-56 rounded-lg shadow-xl bg-white border border-gray-200 overflow-hidden animate-fadeIn"
+                  className="origin-top-right z-30 absolute right-0 mt-4 min-w-56 w-auto rounded-lg shadow-xl bg-white border border-gray-300 
+                  animate-fadeIn transition-all duration-200 transform animate-dropdown"
+                  style={{animation: "dropdownAnimation 0.25s ease-out forwards"}}
                 >
-                 
+                  <div className="absolute -top-1.5 rounded-tl-xs border-t right-3 size-3 rotate-45 bg-gray-100 border-l border-gray-300"></div>
 
 
                   {/* Menu items */}
-                  <div className="py-1">
+                  <div className="">
+                    <div className="bg-gray-100 rounded-t-lg">
+                      <div className="flex flex-col items-center px-5 py-5 border-b border-gray-100">
+                        <div className="size-12 rounded-full overflow-hidden border-2 border-white bg-white shadow-sm">
+                          <img
+                            src={user.photoURL || "https://via.placeholder.com/150"}
+                            alt="User Avatar"
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                        <div className="text-center mt-2">
+                          <p className="text-sm font-medium text-gray-800">{user.name || "User Name"}</p>
+                          <p className="text-xs text-gray-500">{user.email || ""}</p>
+                        </div>
+                      </div>
+                    </div>
+
                     <Link
                       to="/dashboard/profile"
                       className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
@@ -281,12 +298,11 @@ function Navbar() {
                       <RiSettings4Line className="w-4 h-4 mr-3 text-gray-500" />
                       Settings
                     </Link>
-                    <div className="border-t border-gray-100 my-1"></div>
+                    <div className="border-t border-gray-100 "></div>
                     <button
                       onClick={() => {
                         toggleDropdown();
-                        localStorage.removeItem("token");
-                        navigate("/");
+                        SignOut();
                       }}
                       className="flex w-full items-center px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors"
                     >

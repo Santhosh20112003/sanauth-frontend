@@ -2,6 +2,7 @@ import { createContext, useContext, useState } from "react";
 import type { ReactNode } from 'react';
 import request from "../config/axios_config";
 import { v4 as uuidv4 } from 'uuid';
+import { useNavigate } from "react-router-dom";
 
 const userAuthContext = createContext<any | undefined>(undefined);
 
@@ -10,6 +11,7 @@ interface UserAuthContextProviderProps {
 }
 
 export function UserAuthContextProvider({ children }: UserAuthContextProviderProps) {
+  const navigate = useNavigate();
   const [user, setUser] = useState<any>({
     uid: "",
     email: "",
@@ -57,12 +59,29 @@ export function UserAuthContextProvider({ children }: UserAuthContextProviderPro
     }
   }
 
+  const SignOut = () => {
+    setUser({
+      uid: "",
+      email: "",
+      name: "",
+      photoURL: "",
+      role: "",
+      createdAt: new Date().toISOString(),
+      lastLogin: new Date().toISOString(),
+      active: false
+    });
+    localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
+    navigate('/login');
+  }
+
   const contextValue: any = {
     user,
     setUser,
     getLoginSessions,
     getUserDetails,
-    createNewUser
+    createNewUser,
+    SignOut
   };
 
 

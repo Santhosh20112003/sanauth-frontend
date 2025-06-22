@@ -60,15 +60,15 @@ function Profile() {
                         onError={(e) => {
                           // Fallback if image fails to load
                           e.currentTarget.style.display = 'none';
-                          e.currentTarget.parentElement!.classList.add('bg-[#67c6ff]/10');
+                          e.currentTarget.parentElement!.classList.add('bg-[#20bfef]/10');
                           const initials = document.createElement('div');
-                          initials.className = "w-full h-full flex items-center justify-center text-[#67c6ff] text-2xl font-bold";
+                          initials.className = "w-full h-full flex items-center justify-center text-[#20bfef] text-2xl font-bold";
                           initials.textContent = getUserInitials(user.name);
                           e.currentTarget.parentElement!.appendChild(initials);
                         }}
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-[#67c6ff]/10 text-[#67c6ff] text-2xl font-bold">
+                      <div className="w-full h-full flex items-center justify-center bg-[#20bfef]/10 text-[#20bfef] text-2xl font-bold">
                         {getUserInitials(user.name)}
                       </div>
                     )}
@@ -91,7 +91,7 @@ function Profile() {
                 <Link
                   to="info"
                   className={`flex items-center w-full px-4 py-2 text-sm rounded-lg transition-colors ${location.pathname.includes('info')
-                    ? 'bg-[#67c6ff]/10 text-[#67c6ff]'
+                    ? 'bg-[#20bfef]/10 text-[#20bfef]'
                     : 'text-gray-600 hover:bg-gray-100'
                     }`}
                 >
@@ -100,7 +100,7 @@ function Profile() {
                 <Link
                   to="security"
                   className={`flex items-center w-full px-4 py-2 text-sm rounded-lg transition-colors ${location.pathname.includes('security')
-                    ? 'bg-[#67c6ff]/10 text-[#67c6ff]'
+                    ? 'bg-[#20bfef]/10 text-[#20bfef]'
                     : 'text-gray-600 hover:bg-gray-100'
                     }`}
                 >
@@ -109,7 +109,7 @@ function Profile() {
                 <Link
                   to="active-sessions"
                   className={`flex items-center w-full px-4 py-2 text-sm rounded-lg transition-colors ${location.pathname.includes('active-sessions')
-                    ? 'bg-[#67c6ff]/10 text-[#67c6ff]'
+                    ? 'bg-[#20bfef]/10 text-[#20bfef]'
                     : 'text-gray-600 hover:bg-gray-100'
                     }`}
                 >
@@ -118,7 +118,7 @@ function Profile() {
                 <Link
                   to="login-history"
                   className={`flex items-center w-full px-4 py-2 text-sm rounded-lg transition-colors ${location.pathname.includes('login-history')
-                    ? 'bg-[#67c6ff]/10 text-[#67c6ff]'
+                    ? 'bg-[#20bfef]/10 text-[#20bfef]'
                     : 'text-gray-600 hover:bg-gray-100'
                     }`}
                 >
@@ -127,7 +127,7 @@ function Profile() {
                 <Link
                   to="connected-apps"
                   className={`flex items-center w-full px-4 py-2 text-sm rounded-lg transition-colors ${location.pathname.includes('connected-apps')
-                    ? 'bg-[#67c6ff]/10 text-[#67c6ff]'
+                    ? 'bg-[#20bfef]/10 text-[#20bfef]'
                     : 'text-gray-600 hover:bg-gray-100'
                     }`}
                 >

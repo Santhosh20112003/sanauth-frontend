@@ -149,6 +149,9 @@ const LoginHistory: React.FC<LoginHistoryProps> = ({ standalone = false }) => {
       });
     }
 
+    // Sort the filtered results by login time (newest first)
+    result.sort((a, b) => new Date(b.loginTime).getTime() - new Date(a.loginTime).getTime());
+
     setFilteredSessions(result);
   };
 

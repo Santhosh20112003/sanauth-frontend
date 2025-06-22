@@ -1,61 +1,137 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  RiEyeLine, RiEyeOffLine, RiShieldLine, RiArrowLeftLine
+  RiEyeLine, RiEyeOffLine, RiArrowLeftLine,
+  RiShieldCheckLine, RiLockLine, RiCheckLine, RiCloseLine
 } from 'react-icons/ri';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import request from '../../config/axios_config';
+import toast from 'react-hot-toast';
+import { useUserAuth } from '../../context/UserAuthContext';
 
 interface SecurityProps {
-  onChangePassword?: (currentPassword: string, newPassword: string) => Promise<void>;
   standalone?: boolean;
 }
 
-const Security: React.FC<SecurityProps> = () => {
+interface PasswordData {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
 
-  const standalone = false;
-  const onChangePassword = async () => {
-    console.log('Password change function not provided');
-    return new Promise<void>(resolve => setTimeout(resolve, 1000));
-  }
+interface PasswordValidation {
+  hasMinLength: boolean;
+  hasSpecialChar: boolean;
+  hasNumber: boolean;
+  hasMixedCase: boolean;
+}
+
+const Security: React.FC<SecurityProps> = ({ standalone = false }) => {
+  // State management
   const [showPassword, setShowPassword] = useState(false);
-  const [passwordData, setPasswordData] = useState({
+  const [passwordData, setPasswordData] = useState<PasswordData>({
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
+  const [validation, setValidation] = useState<PasswordValidation>({
+    hasMinLength: false,
+    hasSpecialChar: false,
+    hasNumber: false,
+    hasMixedCase: false
+  });
+  const { SignOut } = useUserAuth();
+
+  // Password validation effect
+  useEffect(() => {
+    if (passwordData.newPassword) {
+      setValidation({
+        hasMinLength: passwordData.newPassword.length >= 8,
+        hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(passwordData.newPassword),
+        hasNumber: /\d/.test(passwordData.newPassword),
+        hasMixedCase: /[a-z]/.test(passwordData.newPassword) && /[A-Z]/.test(passwordData.newPassword)
+      });
+    }
+  }, [passwordData.newPassword]);
 
   // Handle password input change
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setPasswordData({
-      ...passwordData,
+    setPasswordData(prev => ({
+      ...prev,
       [name]: value
-    });
+    }));
+
+    // Clear message when user starts typing again
+    if (message.text) {
+      setMessage({ text: '', type: '' });
+    }
+  };
+
+  // Password strength calculation
+  const getPasswordStrength = (): { strength: number, label: string, color: string } => {
+    if (!passwordData.newPassword) {
+      return { strength: 0, label: 'None', color: 'bg-gray-200' };
+    }
+
+    const { hasMinLength, hasSpecialChar, hasNumber, hasMixedCase } = validation;
+    const criteriaCount = [hasMinLength, hasSpecialChar, hasNumber, hasMixedCase].filter(Boolean).length;
+
+    if (criteriaCount === 4) return { strength: 100, label: 'Strong', color: 'bg-green-500' };
+    if (criteriaCount === 3) return { strength: 75, label: 'Good', color: 'bg-blue-500' };
+    if (criteriaCount === 2) return { strength: 50, label: 'Fair', color: 'bg-yellow-500' };
+    return { strength: 25, label: 'Weak', color: 'bg-red-500' };
+  };
+
+  // Form validation
+  const isFormValid = (): boolean => {
+    return (
+      !!passwordData.currentPassword &&
+      !!passwordData.newPassword &&
+      !!passwordData.confirmPassword &&
+      passwordData.newPassword === passwordData.confirmPassword &&
+      getPasswordStrength().strength >= 50 // At least "Fair" password
+    );
   };
 
   // Change password
   const changePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      return;
-    }
+
+    if (!isFormValid()) return;
 
     setIsSubmitting(true);
     try {
-      await onChangePassword();
+      await request.post("/api/users/change/password", {
+        old_password: passwordData.currentPassword,
+        new_password: passwordData.newPassword
+      });
+
       setMessage({ text: "Password changed successfully!", type: "success" });
       setPasswordData({
         currentPassword: '',
         newPassword: '',
         confirmPassword: ''
       });
-    } catch (error) {
-      setMessage({ text: "Failed to update password. Please try again.", type: "error" });
+      toast.success("Password updated successfully!");
+
+      setTimeout(() => {
+        SignOut();
+      }, 2000);
+
+    } catch (error: any) {
+      console.log(error);
+      const errorMessage = error?.response.data || "An error occurred while changing the password.";
+      setMessage({ text: errorMessage, type: "error" });
+      toast.error(errorMessage);
+      console.error('Error changing password:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const passwordStrength = getPasswordStrength();
 
   return (
     <div className={`${standalone ? 'p-6 max-w-6xl mx-auto' : ''}`}>
@@ -69,19 +145,23 @@ const Security: React.FC<SecurityProps> = () => {
       )}
 
       <div className="space-y-6">
-        {/* Change Password */}
+        {/* Change Password Section */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          {!standalone && <h2 className="text-lg font-semibold text-gray-800 mb-6">Change Password</h2>}
-          {standalone && <h2 className="text-lg font-semibold text-gray-800 mb-6">Password Management</h2>}
+          <div className="flex items-center mb-6">
+            <RiLockLine className="w-5 h-5 text-gray-700 mr-2" />
+            <h2 className="text-lg font-semibold text-gray-800">
+              {standalone ? 'Password Management' : 'Change Password'}
+            </h2>
+          </div>
 
           {message.text && (
-            <div className={`p-3 rounded-lg mb-4 ${message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
-              }`}>
+            <div className={`p-3 rounded-lg mb-4 ${message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
               {message.text}
             </div>
           )}
 
           <form onSubmit={changePassword} className="space-y-4">
+            {/* Current Password */}
             <div>
               <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-1">
                 Current Password
@@ -110,6 +190,7 @@ const Security: React.FC<SecurityProps> = () => {
               </div>
             </div>
 
+            {/* New Password */}
             <div>
               <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-1">
                 New Password
@@ -123,8 +204,47 @@ const Security: React.FC<SecurityProps> = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#67c6ff]/30 focus:border-[#67c6ff]"
                 required
               />
+
+              {/* Password strength indicator */}
+              {passwordData.newPassword && (
+                <div className="mt-2">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs font-medium text-gray-700">Password strength: </span>
+                    <span className="text-xs font-medium">{passwordStrength.label}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-1.5">
+                    <div
+                      className={`h-1.5 rounded-full transition-all ${passwordStrength.color}`}
+                      style={{ width: `${passwordStrength.strength}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Password requirement checklist */}
+              {passwordData.newPassword && (
+                <div className="mt-2 grid grid-cols-2 gap-1">
+                  <div className={`flex items-center text-xs ${validation.hasMinLength ? 'text-green-600' : 'text-gray-500'}`}>
+                    {validation.hasMinLength ? <RiCheckLine className="mr-1" /> : <RiCloseLine className="mr-1" />}
+                    8+ characters
+                  </div>
+                  <div className={`flex items-center text-xs ${validation.hasSpecialChar ? 'text-green-600' : 'text-gray-500'}`}>
+                    {validation.hasSpecialChar ? <RiCheckLine className="mr-1" /> : <RiCloseLine className="mr-1" />}
+                    Special character
+                  </div>
+                  <div className={`flex items-center text-xs ${validation.hasNumber ? 'text-green-600' : 'text-gray-500'}`}>
+                    {validation.hasNumber ? <RiCheckLine className="mr-1" /> : <RiCloseLine className="mr-1" />}
+                    Number
+                  </div>
+                  <div className={`flex items-center text-xs ${validation.hasMixedCase ? 'text-green-600' : 'text-gray-500'}`}>
+                    {validation.hasMixedCase ? <RiCheckLine className="mr-1" /> : <RiCloseLine className="mr-1" />}
+                    Mixed case
+                  </div>
+                </div>
+              )}
             </div>
 
+            {/* Confirm Password */}
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
                 Confirm New Password
@@ -135,45 +255,48 @@ const Security: React.FC<SecurityProps> = () => {
                 name="confirmPassword"
                 value={passwordData.confirmPassword}
                 onChange={handlePasswordChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#67c6ff]/30 focus:border-[#67c6ff]"
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#67c6ff]/30 ${passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword
+                  ? 'border-red-300 focus:border-red-300'
+                  : 'border-gray-300 focus:border-[#67c6ff]'
+                  }`}
                 required
               />
+
+              {passwordData.newPassword && passwordData.confirmPassword &&
+                passwordData.newPassword !== passwordData.confirmPassword && (
+                  <p className="text-sm text-red-600 mt-1">Passwords do not match</p>
+                )
+              }
             </div>
 
-            {passwordData.newPassword && passwordData.confirmPassword &&
-              passwordData.newPassword !== passwordData.confirmPassword && (
-                <p className="text-sm text-red-600">Passwords do not match</p>
-              )
-            }
-
+            {/* Submit Button */}
             <div className="pt-2">
               <button
                 type="submit"
-                className="px-4 py-2 bg-[#67c6ff] text-white rounded-lg hover:bg-[#57b6ff] transition-colors"
-                disabled={isSubmitting || !passwordData.currentPassword ||
-                  !passwordData.newPassword ||
-                  !passwordData.confirmPassword ||
-                  passwordData.newPassword !== passwordData.confirmPassword}
+                className={`px-4 py-2 rounded-lg transition-colors flex items-center ${isFormValid()
+                  ? 'bg-[#20bfef]/90 text-white hover:bg-[#20bfef]'
+                  : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                  }`}
+                disabled={isSubmitting || !isFormValid()}
               >
+                {isSubmitting && (
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                )}
                 {isSubmitting ? 'Updating...' : 'Update Password'}
               </button>
             </div>
           </form>
-
-          <div className="mt-6 bg-blue-50 p-4 rounded-lg">
-            <h3 className="text-sm font-medium text-blue-800 mb-1">Password Tips</h3>
-            <ul className="text-xs text-blue-700 list-disc list-inside space-y-1">
-              <li>Use at least 8 characters</li>
-              <li>Include at least one special character</li>
-              <li>Include at least one number</li>
-              <li>Include uppercase and lowercase letters</li>
-            </ul>
-          </div>
         </div>
 
         {/* Two-Factor Authentication */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-6">Two-Factor Authentication</h2>
+          <div className="flex items-center mb-6">
+            <RiShieldCheckLine className="w-5 h-5 text-gray-700 mr-2" />
+            <h2 className="text-lg font-semibold text-gray-800">Two-Factor Authentication</h2>
+          </div>
 
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -192,8 +315,8 @@ const Security: React.FC<SecurityProps> = () => {
           </div>
 
           <div className="flex items-center">
-            <span className="text-xs bg-green-100 text-green-800 rounded-full px-3 py-1 mr-3">
-              Enabled
+            <span className="text-xs bg-green-100 text-green-800 rounded-full px-3 py-1 mr-3 flex items-center">
+              <RiCheckLine className="mr-1" /> Enabled
             </span>
             <p className="text-sm text-gray-800">
               Your account is protected by two-factor authentication.

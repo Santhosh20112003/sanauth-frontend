@@ -26,8 +26,8 @@ function App() {
 
   return (
     <>
-      <UserAuthContextProvider>
-        <BrowserRouter>
+      <BrowserRouter>
+        <UserAuthContextProvider>
           <Routes>
             <Route
               path="/"
@@ -141,12 +141,12 @@ function App() {
               />
             </Route>
           </Routes>
-        </BrowserRouter>
-        <Toaster
-          position="top-right"
-          containerClassName=""
-        />
-      </UserAuthContextProvider>
+        </UserAuthContextProvider>
+      </BrowserRouter>
+      <Toaster
+        position="top-right"
+        containerClassName=""
+      />
     </>
   )
 }
