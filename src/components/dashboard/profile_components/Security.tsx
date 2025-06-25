@@ -3,7 +3,7 @@ import {
   RiEyeLine, RiEyeOffLine, RiArrowLeftLine,
   RiShieldCheckLine, RiLockLine, RiCheckLine, RiCloseLine
 } from 'react-icons/ri';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import request from '../../config/axios_config';
 import toast from 'react-hot-toast';
 import { useUserAuth } from '../../context/UserAuthContext';

@@ -3,11 +3,12 @@ import {
   RiEdit2Line, RiCheckLine, RiCloseLine, RiCamera2Line,
   RiMailLine, RiShieldUserLine, RiMapPinLine, RiPhoneLine,
   RiGlobalLine, RiBriefcaseLine, RiCalendarLine, RiUser3Line,
-  RiInformationLine, RiLoader4Line, RiMapPin2Line
+  RiInformationLine, RiLoader4Line, RiMapPin2Line, RiUploadCloud2Line
 } from 'react-icons/ri';
 import { useUserAuth } from '../../context/UserAuthContext';
 import request from '../../config/axios_config';
 import toast from 'react-hot-toast';
+import { CLOUD_NAME, UPLOAD_PRESET } from '../../../common/Cloudinary';
 
 // User interface
 interface User {
@@ -37,6 +38,8 @@ const PersonalInfo: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   // Update formData whenever user changes
   useEffect(() => {
@@ -45,18 +48,73 @@ const PersonalInfo: React.FC = () => {
     }
   }, [user]);
 
-  // Handle image upload
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle image upload with Cloudinary
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setFormData({
-          ...formData,
-          photoURL: reader.result as string
+    if (!file) return;
+
+    // Validate file type and size
+    const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      setError('Please select a valid image file (JPEG, PNG, GIF, or WebP)');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      setError('Image size should be less than 5MB');
+      return;
+    }
+
+    setIsUploadingImage(true);
+    setUploadProgress(0);
+    setError(null);
+
+    try {
+      // Create form data for upload
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', CLOUD_NAME); // Make sure this preset is configured in Cloudinary dashboard
+      formData.append('cloud_name', UPLOAD_PRESET);
+
+      // Simulate progress (actual progress events may require different implementation)
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          const newProgress = prev + 10;
+          return newProgress >= 90 ? 90 : newProgress;
         });
-      };
-      reader.readAsDataURL(file);
+      }, 300);
+
+      // IMPORTANT: Never expose your API secret in frontend code
+      // Use unsigned uploads with an upload preset configured in Cloudinary
+      const response = await fetch(`https://api.cloudinary.com/v1_1/dwrujwvkg/image/upload`, {
+        method: 'POST',
+        body: formData
+      });
+
+      clearInterval(progressInterval);
+
+      if (!response.ok) {
+        throw new Error('Failed to upload image');
+      }
+
+      const data = await response.json();
+      setUploadProgress(100);
+      
+      // Update form data with the Cloudinary URL
+      setFormData(prev => ({
+        ...prev,
+        photoURL: data.secure_url
+      }));
+
+      toast.success('Profile image uploaded successfully');
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      setError('Failed to upload image. Please try again.');
+    } finally {
+      setTimeout(() => {
+        setIsUploadingImage(false);
+        setUploadProgress(0);
+      }, 1000);
     }
   };
 
@@ -272,8 +330,20 @@ const PersonalInfo: React.FC = () => {
                       {getUserInitials(formData.name)}
                     </div>
                   )}
+                  
+                  {isUploadingImage && (
+                    <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center">
+                      <RiUploadCloud2Line className="text-white text-2xl mb-2" />
+                      <div className="w-16 h-1 bg-gray-300 rounded-full">
+                        <div 
+                          className="h-full bg-white rounded-full transition-all duration-300" 
+                          style={{ width: `${uploadProgress}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <label htmlFor="profile-upload" className="absolute bottom-1 right-1 bg-white p-2.5 rounded-full border border-gray-200 shadow-sm cursor-pointer hover:bg-gray-50 transition-colors duration-200">
+                <label htmlFor="profile-upload" className={`absolute bottom-1 right-1 bg-white p-2.5 rounded-full border border-gray-200 shadow-sm ${isUploadingImage ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50 transition-colors duration-200'}`}>
                   <RiCamera2Line className="text-gray-600 text-lg" />
                   <input
                     id="profile-upload"
@@ -281,6 +351,7 @@ const PersonalInfo: React.FC = () => {
                     accept="image/*"
                     className="hidden"
                     onChange={handleImageUpload}
+                    disabled={isUploadingImage}
                   />
                 </label>
               </div>
@@ -416,7 +487,7 @@ const PersonalInfo: React.FC = () => {
                   </div>
                   
                   <div>
-                    <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1 flex items-center justify-between">
+                    <label htmlFor="location" className=" text-sm font-medium text-gray-700 mb-1 flex items-center justify-between">
                       <span>Location</span>
                       <button 
                         type="button" 

@@ -1,32 +1,10 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { RiUser3Line, RiSettings4Line, RiFileListLine, RiApps2AiLine, RiAddCircleLine, RiArrowDownSLine } from "react-icons/ri";
-import { GoHome, GoOrganization } from "react-icons/go";
-import { PiUsersFourLight } from "react-icons/pi";
-import { IoIosTrendingUp } from "react-icons/io";
+import { navItems } from "../../common/NavItems";
 
 function Sidebar() {
     const location = useLocation();
     const [isExpanded, setIsExpanded] = useState(true);
-    const [isOrgDropdownOpen, setIsOrgDropdownOpen] = useState(false);
-
-    const organizations = [
-        { id: 1, name: "My Organization", logo: "MO" },
-        { id: 2, name: "Personal Projects", logo: "PP" },
-        { id: 3, name: "Client Work", logo: "CW" }
-    ];
-
-    const [selectedOrg, setSelectedOrg] = useState(organizations[0]);
-
-    const navItems = [
-        { path: "/dashboard/home", name: "Getting Started", icon: GoHome },
-        { path: "/dashboard/insights", name: "Activity Insights", icon: IoIosTrendingUp },
-        { path: "/dashboard/organization", name: "Organization", icon: GoOrganization },
-        { path: "/dashboard/apps", name: "Apps", icon: RiApps2AiLine },
-        { path: "/dashboard/users", name: "Users", icon: PiUsersFourLight },
-        { path: "/dashboard/settings", name: "Settings", icon: RiSettings4Line },
-    ];
-
     const isActive = (path: string) => location.pathname === path;
 
     return (

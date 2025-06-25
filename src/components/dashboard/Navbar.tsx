@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { RiUser3Line, RiSettings4Line, RiLogoutBoxRLine, RiArrowDownSLine, RiNotification3Line } from "react-icons/ri";
 import { GoOrganization } from "react-icons/go";
 import { useUserAuth } from "../context/UserAuthContext";
+import Notification from "./notification_components/Notification";
 
 
 function Navbar() {
@@ -92,7 +93,7 @@ function Navbar() {
           {/* Left section - Logo & Organization */}
           <div className="flex items-center gap-2">
             <div className="flex items-center">
-              <Link to="/dashboard" className="flex items-center">
+              <Link to="/dashboard/home" className="flex items-center">
                 <div className="bg-white px-3 py-1.5 rounded-md shadow-sm flex items-center gap-2">
                   <img
                     src="https://ik.imagekit.io/vituepzjm/SanAuth/SanAuth.svg?updatedAt=1749400779754"
@@ -173,71 +174,7 @@ function Navbar() {
             </button>
 
             {/* Notification Bell */}
-            <div className="relative">
-              <button
-                ref={notificationsButtonRef}
-                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-                className="flex items-center justify-center group p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors border border-white/30 text-white"
-              >
-                <RiNotification3Line className="w-5 h-5" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 size-3.5 bg-red-400 rounded-full border-2 border-white text-white text-xs flex items-center justify-center">
-                  </span>
-                )}
-              </button>
-
-              {isNotificationsOpen && (
-                <div
-                  ref={notificationsDropdownRef}
-                  className="origin-top-right z-30 absolute right-0 mt-2 w-80 rounded-lg shadow-xl bg-white border border-gray-200 overflow-hidden animate-fadeIn"
-                >
-                  <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
-                    <h3 className="font-medium text-gray-800">Notifications</h3>
-                    <button className="text-xs text-[#67c6ff] hover:text-[#4dabea] transition-colors font-medium">
-                      Mark all as read
-                    </button>
-                  </div>
-
-                  <div className="max-h-[320px] overflow-y-auto">
-                    {notifications.length === 0 ? (
-                      <div className="py-8 text-center text-gray-500">
-                        <div className="flex justify-center mb-3">
-                          <RiNotification3Line className="w-10 h-10 text-gray-300" />
-                        </div>
-                        <p>No new notifications</p>
-                      </div>
-                    ) : (
-                      notifications.map(notification => (
-                        <div
-                          key={notification.id}
-                          className={`p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer ${!notification.read ? 'bg-blue-50/50' : ''}`}
-                        >
-                          <div className="flex items-start">
-                            <div className={`w-2 h-2 mt-1.5 rounded-full flex-shrink-0 ${!notification.read ? 'bg-[#67c6ff]' : 'bg-gray-300'}`}></div>
-                            <div className="ml-3 flex-grow">
-                              <p className={`text-sm ${!notification.read ? 'font-medium text-gray-800' : 'text-gray-600'}`}>
-                                {notification.message}
-                              </p>
-                              <p className="text-xs text-gray-500 mt-0.5">{notification.time}</p>
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-
-                  <div className="p-3 border-t border-gray-100 bg-gray-50 text-center">
-                    <Link
-                      to="/notifications"
-                      onClick={() => setIsNotificationsOpen(false)}
-                      className="text-sm text-[#67c6ff] hover:text-[#4dabea] transition-colors font-medium"
-                    >
-                      View all notifications
-                    </Link>
-                  </div>
-                </div>
-              )}
-            </div>
+            <Notification />
 
             <div className="relative">
               <div
@@ -259,7 +196,7 @@ function Navbar() {
                   ref={userDropdownRef}
                   className="origin-top-right z-30 absolute right-0 mt-4 min-w-56 w-auto rounded-lg shadow-xl bg-white border border-gray-300 
                   animate-fadeIn transition-all duration-200 transform animate-dropdown"
-                  style={{animation: "dropdownAnimation 0.25s ease-out forwards"}}
+                  style={{ animation: "dropdownAnimation 0.25s ease-out forwards" }}
                 >
                   <div className="absolute -top-1.5 rounded-tl-xs border-t right-3 size-3 rotate-45 bg-gray-100 border-l border-gray-300"></div>
 
@@ -281,22 +218,21 @@ function Navbar() {
                         </div>
                       </div>
                     </div>
-
-                    <Link
+                    {/* <Link
                       to="/dashboard/profile"
                       className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                       onClick={toggleDropdown}
                     >
                       <RiUser3Line className="w-4 h-4 mr-3 text-gray-500" />
                       Your Profile
-                    </Link>
+                    </Link> */}
                     <Link
-                      to="/dashboard/settings"
+                      to="/dashboard/settings/profile"
                       className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                       onClick={toggleDropdown}
                     >
                       <RiSettings4Line className="w-4 h-4 mr-3 text-gray-500" />
-                      Settings
+                      Account Settings
                     </Link>
                     <div className="border-t border-gray-100 "></div>
                     <button

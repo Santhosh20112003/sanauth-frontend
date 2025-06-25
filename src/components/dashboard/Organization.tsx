@@ -1,17 +1,66 @@
 import React, { useState } from 'react';
 import {
     RiBuilding4Line, RiTeamLine, RiSettings3Line,
-    RiAddLine, RiEdit2Line, RiDeleteBin6Line, RiCheckLine, RiCloseLine,
+    RiAddLine, RiEdit2Line, RiDeleteBin6Line, RiCloseLine,
     RiMailLine, RiPhoneLine, RiGlobalLine, RiMapPinLine, RiUpload2Line,
     RiCornerDownRightFill
 } from 'react-icons/ri';
 
+// Define TypeScript interfaces for better type safety
+interface Subscription {
+    plan: string;
+    status: string;
+    nextBilling: string;
+    amount: string;
+}
+
+interface ApiUsage {
+    used: number;
+    limit: number;
+    percentage: number;
+}
+
+interface OrganizationData {
+    id: string;
+    name: string;
+    logo: string | null;
+    industry: string;
+    size: string;
+    description: string;
+    website: string;
+    email: string;
+    phone: string;
+    address: string;
+    subscription: Subscription;
+    apiUsage: ApiUsage;
+}
+
+interface TeamMember {
+    id: number;
+    name: string;
+    email: string;
+    role: string;
+    avatar: string | null;
+}
+
+interface InvitationData {
+    email: string;
+    role: string;
+}
+
+interface Invoice {
+    id: string;
+    date: string;
+    amount: string;
+    status: string;
+}
+
 function Organization() {
-    // State for organization details
-    const [organization, setOrganization] = useState({
+    // Organization data state
+    const [organization, setOrganization] = useState<OrganizationData>({
         id: "org-123456",
         name: "Acme Corporation",
-        logo: "/logo-placeholder.png",
+        logo: null,
         industry: "Technology",
         size: "50-200 employees",
         description: "Leading provider of authentication and security solutions for enterprises.",
@@ -32,35 +81,38 @@ function Organization() {
         }
     });
 
-    // State for team members
-    const [teamMembers, setTeamMembers] = useState([
-        { id: 1, name: "John Doe", email: "john@acmecorp.example.com", role: "Owner", avatar: null },
-        { id: 2, name: "Jane Smith", email: "jane@acmecorp.example.com", role: "Admin", avatar: null },
-        { id: 3, name: "Robert Johnson", email: "robert@acmecorp.example.com", role: "Member", avatar: null },
-        { id: 4, name: "Emily Davis", email: "emily@acmecorp.example.com", role: "Member", avatar: null }
-    ]);
+    // Team members state
+    const [teamMembers, setTeamMembers] = useState<TeamMember[]>(
+        [
+            { id: 1, name: "John Doe", email: "john@acmecorp.example.com", role: "Owner", avatar: null },
+            { id: 2, name: "Jane Smith", email: "jane@acmecorp.example.com", role: "Admin", avatar: null },
+            { id: 3, name: "Robert Johnson", email: "robert@acmecorp.example.com", role: "Member", avatar: null }
+        ]
+    );
 
-    // State for which section is active
-    const [activeSection, setActiveSection] = useState('overview');
+    // Billing history data
+    const billingHistory: Invoice[] = [
+        { id: 'INV-001', date: '2023-11-01', amount: '$499.00', status: 'Paid' },
+        { id: 'INV-002', date: '2023-10-01', amount: '$499.00', status: 'Paid' },
+        { id: 'INV-003', date: '2023-09-01', amount: '$499.00', status: 'Paid' }
+    ];
 
-    // State for invitation form
-    const [showInvitation, setShowInvitation] = useState(false);
-    const [invitation, setInvitation] = useState({ email: '', role: 'Member' });
+    // UI state
+    const [activeSection, setActiveSection] = useState<string>('overview');
+    const [showInvitation, setShowInvitation] = useState<boolean>(false);
+    const [invitation, setInvitation] = useState<InvitationData>({ email: '', role: 'Member' });
 
-    // Handle invitation form
+    // Event handlers
     const handleInviteSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         console.log("Inviting user:", invitation);
         setShowInvitation(false);
         setInvitation({ email: '', role: 'Member' });
-        // Here you would typically make an API call to send the invitation
     };
 
-    // Handle organization update
     const handleOrganizationUpdate = (e: React.FormEvent) => {
         e.preventDefault();
         console.log("Updating organization:", organization);
-        // Here you would typically make an API call to update the organization
     };
 
     return (
@@ -73,14 +125,13 @@ function Organization() {
 
             {/* Main Content */}
             <div className="flex flex-col lg:flex-row gap-6">
-                {/* Sidebar */}
+                {/* Sidebar Navigation */}
                 <div className="lg:w-64 flex-shrink-0">
                     <div className="bg-white rounded-xl shadow-sm p-4 sticky top-6 border border-gray-100">
                         <div className="flex flex-col space-y-1">
                             <button
                                 onClick={() => setActiveSection('overview')}
-                                className={`flex items-center p-3 rounded-lg ${activeSection === 'overview' ? 'bg-[#67c6ff]/10 text-[#67c6ff]' : 'text-gray-600 hover:bg-gray-100'
-                                    }`}
+                                className={`flex items-center p-3 rounded-lg ${activeSection === 'overview' ? 'bg-[#67c6ff]/10 text-[#67c6ff]' : 'text-gray-600 hover:bg-gray-100'}`}
                             >
                                 <RiBuilding4Line className="mr-3 text-lg" />
                                 <span className="font-medium">Overview</span>
@@ -88,8 +139,7 @@ function Organization() {
 
                             <button
                                 onClick={() => setActiveSection('team')}
-                                className={`flex items-center p-3 rounded-lg ${activeSection === 'team' ? 'bg-[#67c6ff]/10 text-[#67c6ff]' : 'text-gray-600 hover:bg-gray-100'
-                                    }`}
+                                className={`flex items-center p-3 rounded-lg ${activeSection === 'team' ? 'bg-[#67c6ff]/10 text-[#67c6ff]' : 'text-gray-600 hover:bg-gray-100'}`}
                             >
                                 <RiTeamLine className="mr-3 text-lg" />
                                 <span className="font-medium">Team Members</span>
@@ -97,8 +147,7 @@ function Organization() {
 
                             <button
                                 onClick={() => setActiveSection('settings')}
-                                className={`flex items-center p-3 rounded-lg ${activeSection === 'settings' ? 'bg-[#67c6ff]/10 text-[#67c6ff]' : 'text-gray-600 hover:bg-gray-100'
-                                    }`}
+                                className={`flex items-center p-3 rounded-lg ${activeSection === 'settings' ? 'bg-[#67c6ff]/10 text-[#67c6ff]' : 'text-gray-600 hover:bg-gray-100'}`}
                             >
                                 <RiSettings3Line className="mr-3 text-lg" />
                                 <span className="font-medium">Settings</span>
@@ -106,8 +155,7 @@ function Organization() {
 
                             <button
                                 onClick={() => setActiveSection('billing')}
-                                className={`flex items-center p-3 rounded-lg ${activeSection === 'billing' ? 'bg-[#67c6ff]/10 text-[#67c6ff]' : 'text-gray-600 hover:bg-gray-100'
-                                    }`}
+                                className={`flex items-center p-3 rounded-lg ${activeSection === 'billing' ? 'bg-[#67c6ff]/10 text-[#67c6ff]' : 'text-gray-600 hover:bg-gray-100'}`}
                             >
                                 <RiCornerDownRightFill className="mr-3 text-lg" />
                                 <span className="font-medium">Billing</span>
@@ -118,6 +166,7 @@ function Organization() {
 
                 {/* Content Area */}
                 <div className="flex-1">
+                    {/* Overview Section */}
                     {activeSection === 'overview' && (
                         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
@@ -218,10 +267,15 @@ function Organization() {
                             <div className="mt-6 bg-gray-50 p-6 rounded-lg">
                                 <div className="flex justify-between items-center mb-4">
                                     <h4 className="font-medium text-gray-800">API Usage</h4>
-                                    <span className="text-sm text-gray-500">{organization.apiUsage.used.toLocaleString()} of {organization.apiUsage.limit.toLocaleString()} calls</span>
+                                    <span className="text-sm text-gray-500">
+                                        {organization.apiUsage.used.toLocaleString()} of {organization.apiUsage.limit.toLocaleString()} calls
+                                    </span>
                                 </div>
                                 <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                    <div className="bg-[#67c6ff] h-2.5 rounded-full" style={{ width: `${organization.apiUsage.percentage}%` }}></div>
+                                    <div
+                                        className="bg-[#67c6ff] h-2.5 rounded-full"
+                                        style={{ width: `${organization.apiUsage.percentage}%` }}
+                                    ></div>
                                 </div>
                                 <div className="flex justify-between mt-2">
                                     <span className="text-xs text-gray-500">0</span>
@@ -231,6 +285,7 @@ function Organization() {
                         </div>
                     )}
 
+                    {/* Team Members Section */}
                     {activeSection === 'team' && (
                         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
@@ -280,10 +335,10 @@ function Organization() {
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
-                            ${member.role === 'Owner' ? 'bg-purple-100 text-purple-800' :
+                                                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
+                                                    ${member.role === 'Owner' ? 'bg-purple-100 text-purple-800' :
                                                             member.role === 'Admin' ? 'bg-blue-100 text-blue-800' :
-                                                                'bg-gray-100 text-gray-800'}`}>
+                                                            'bg-gray-100 text-gray-800'}`}>
                                                         {member.role}
                                                     </span>
                                                 </td>
@@ -371,6 +426,7 @@ function Organization() {
                         </div>
                     )}
 
+                    {/* Settings Section */}
                     {activeSection === 'settings' && (
                         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                             <div className="mb-6">
@@ -379,6 +435,7 @@ function Organization() {
                             </div>
 
                             <form onSubmit={handleOrganizationUpdate}>
+                                {/* Form content structure kept but condensed */}
                                 <div className="space-y-6">
                                     {/* Organization Logo */}
                                     <div>
@@ -543,6 +600,7 @@ function Organization() {
                         </div>
                     )}
 
+                    {/* Billing Section */}
                     {activeSection === 'billing' && (
                         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                             <div className="mb-6">
@@ -578,92 +636,7 @@ function Organization() {
                                 </div>
                             </div>
 
-                            {/* Payment Methods */}
-                            <div className="mb-6">
-                                <div className="flex justify-between items-center mb-4">
-                                    <h3 className="text-base font-medium text-gray-800">Payment Methods</h3>
-                                    <button className="text-sm text-[#67c6ff] hover:text-[#57b6ff] font-medium flex items-center">
-                                        <RiAddLine className="mr-1" /> Add Payment Method
-                                    </button>
-                                </div>
-
-                                {/* Payment Methods Cards */}
-                                <div className="space-y-3">
-                                    {/* Primary Payment Method */}
-                                    <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
-                                        <div className="p-4">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center">
-                                                    <div className="h-10 w-10 bg-blue-500/10 rounded-lg flex items-center justify-center mr-3">
-                                                        <svg className="h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-                                                            <line x1="1" y1="10" x2="23" y2="10"></line>
-                                                        </svg>
-                                                    </div>
-                                                    <div>
-                                                        <div className="flex items-center">
-                                                            <p className="text-sm font-medium text-gray-800">Visa •••• 4242</p>
-                                                            <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full bg-[#67c6ff]/10 text-[#67c6ff]">
-                                                                Default
-                                                            </span>
-                                                        </div>
-                                                        <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
-                                                            <span>Expires 12/2025</span>
-                                                            <span className="h-1 w-1 rounded-full bg-gray-300"></span>
-                                                            <span>Added on Nov 5, 2023</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <button className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100">
-                                                        <RiEdit2Line className="h-4 w-4" />
-                                                    </button>
-                                                    <button className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100">
-                                                        <RiDeleteBin6Line className="h-4 w-4" />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    {/* Secondary Payment Method */}
-                                    <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
-                                        <div className="p-4">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center">
-                                                    <div className="h-10 w-10 bg-green-500/10 rounded-lg flex items-center justify-center mr-3">
-                                                        <svg className="h-6 w-6 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-                                                            <line x1="1" y1="10" x2="23" y2="10"></line>
-                                                        </svg>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-medium text-gray-800">Mastercard •••• 8456</p>
-                                                        <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
-                                                            <span>Expires 08/2024</span>
-                                                            <span className="h-1 w-1 rounded-full bg-gray-300"></span>
-                                                            <span>Added on Aug 15, 2023</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <button className="px-3 py-1 text-xs font-medium text-[#67c6ff] hover:bg-[#67c6ff]/10 rounded-md">
-                                                        Make Default
-                                                    </button>
-                                                    <button className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100">
-                                                        <RiEdit2Line className="h-4 w-4" />
-                                                    </button>
-                                                    <button className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100">
-                                                        <RiDeleteBin6Line className="h-4 w-4" />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Billing History */}
+                            {/* Billing History simplified */}
                             <div>
                                 <h3 className="text-base font-medium text-gray-800 mb-4">Billing History</h3>
                                 <div className="border border-gray-200 rounded-lg overflow-hidden">
@@ -689,15 +662,7 @@ function Organization() {
                                                 </tr>
                                             </thead>
                                             <tbody className="bg-white divide-y divide-gray-200">
-                                                {/*
-                          Here you would typically map over your billing history data
-                          For demonstration, static data is used
-                        */}
-                                                {[
-                                                    { id: 'INV-001', date: '2023-11-01', amount: '$499.00', status: 'Paid' },
-                                                    { id: 'INV-002', date: '2023-10-01', amount: '$499.00', status: 'Paid' },
-                                                    { id: 'INV-003', date: '2023-09-01', amount: '$499.00', status: 'Paid' }
-                                                ].map((invoice, index) => (
+                                                {billingHistory.map((invoice, index) => (
                                                     <tr key={index}>
                                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                             {new Date(invoice.date).toLocaleDateString()}

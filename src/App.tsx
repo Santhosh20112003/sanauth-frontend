@@ -20,6 +20,7 @@ import PersonalInfo from "./components/dashboard/profile_components/PersonalInfo
 import Security from "./components/dashboard/profile_components/Security"
 import ConnectedApps from "./components/dashboard/profile_components/ConnectedApps"
 import ActiveSessions from "./components/dashboard/profile_components/ActiveSessions"
+import AllNotification from "./components/dashboard/notification_components/AllNotification"
 
 
 function App() {
@@ -75,8 +76,9 @@ function App() {
                   </PrivateRoute>
                 }
               />
+
               <Route
-                path="profile"
+                path="settings/profile"
                 element={
                   <PrivateRoute>
                     <Profile />
@@ -90,6 +92,9 @@ function App() {
                 <Route path="connected-apps" element={<ConnectedApps />} />
                 <Route path="security" element={<Security />} />
               </Route>
+
+              <Route path="notifications" element={<AllNotification />} />
+              
               <Route
                 path="insights"
                 element={
@@ -98,14 +103,15 @@ function App() {
                   </PrivateRoute>
                 }
               />
-              <Route
+              {/* <Route
                 path="organization"
                 element={
                   <PrivateRoute>
                     <Organization />
                   </PrivateRoute>
                 }
-              />
+              /> */}
+
               <Route
                 path="users"
                 element={
@@ -114,6 +120,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
+
               <Route
                 path="apps"
                 element={
@@ -130,7 +137,14 @@ function App() {
                   </PrivateRoute>
                 }
               />
-
+              <Route
+                path="settings/organization"
+                element={
+                  <PrivateRoute>
+                    <Settings />
+                  </PrivateRoute>
+                }
+              />
               <Route
                 path="*"
                 element={

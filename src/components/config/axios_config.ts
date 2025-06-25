@@ -9,7 +9,7 @@ request.interceptors.request.use(
     (config) => {
         const adminRoutecheck = config.url?.startsWith('/api/auth/admin');
         const shouldnotSkip = config.url?.startsWith('/api/users') ||
-            config.url?.startsWith('/api/auth/me');
+            config.url?.startsWith('/api/auth/me') || config.url?.startsWith('/api/org') ;
 
         if (shouldnotSkip) {
             const token = localStorage.getItem('token') || sessionStorage.getItem("token"); 

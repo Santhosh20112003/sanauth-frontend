@@ -74,6 +74,9 @@ function Login() {
                 }, 2000);
 
             }
+            else if (error.response && error.response.status === 403) {
+                toast.error(error.response.data.error || 'Your Account has been blocked. Please contact support.');
+            }
             else if (error.response && error.response.status === 500) {
                 toast.error('Server error. Please try again later.');
             } else {
