@@ -20,7 +20,9 @@ import PersonalInfo from "./components/dashboard/profile_components/PersonalInfo
 import Security from "./components/dashboard/profile_components/Security"
 import ConnectedApps from "./components/dashboard/profile_components/ConnectedApps"
 import ActiveSessions from "./components/dashboard/profile_components/ActiveSessions"
-import AllNotification from "./components/dashboard/notification_components/AllNotification"
+import { AllNotification } from "./components/dashboard/notification_components/AllNotification"
+import NewOrganization from "./components/dashboard/organization_components/NewOrganization"
+import { NotificationContextProvider } from "./components/context/NotificationContext"
 
 
 function App() {
@@ -29,81 +31,82 @@ function App() {
     <>
       <BrowserRouter>
         <UserAuthContextProvider>
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <Home />
-              }
-            />
-            <Route
-              path="login"
-              element={
-                <Login />
-              }
-            />
-            <Route
-              path="signup"
-              element={
-                <SignUp />
-              }
-            />
-            <Route
-              path="forget-password"
-              element={
-                <ForgetPassword />
-              }
-            />
-            <Route
-              path="verify/:email"
-              element={
-                <Verify />
-              }
-            />
-            <Route
-              path="dashboard"
-              element={
-                <PrivateRoute>
-                  <Structure />
-                </PrivateRoute>
-              }
-            >
+          <NotificationContextProvider>
+            <Routes>
               <Route
-                path="home"
+                path="/"
                 element={
-                  <PrivateRoute>
-                    <GettingStarted />
-                  </PrivateRoute>
+                  <Home />
                 }
               />
-
               <Route
-                path="settings/profile"
+                path="login"
+                element={
+                  <Login />
+                }
+              />
+              <Route
+                path="signup"
+                element={
+                  <SignUp />
+                }
+              />
+              <Route
+                path="forget-password"
+                element={
+                  <ForgetPassword />
+                }
+              />
+              <Route
+                path="verify/:email"
+                element={
+                  <Verify />
+                }
+              />
+              <Route
+                path="dashboard"
                 element={
                   <PrivateRoute>
-                    <Profile />
+                    <Structure />
                   </PrivateRoute>
                 }
               >
-                <Route path="" element={<Navigate to='info' />} />
-                <Route path="info" element={<PersonalInfo />} />
-                <Route path="login-history" element={<LoginHistory />} />
-                <Route path="active-sessions" element={<ActiveSessions />} />
-                <Route path="connected-apps" element={<ConnectedApps />} />
-                <Route path="security" element={<Security />} />
-              </Route>
+                <Route
+                  path="home"
+                  element={
+                    <PrivateRoute>
+                      <GettingStarted />
+                    </PrivateRoute>
+                  }
+                />
 
-              <Route path="notifications" element={<AllNotification />} />
-              
-              <Route
-                path="insights"
-                element={
-                  <PrivateRoute>
-                    <Dashboard />
-                  </PrivateRoute>
-                }
-              />
-              {/* <Route
+                <Route
+                  path="settings/profile"
+                  element={
+                    <PrivateRoute>
+                      <Profile />
+                    </PrivateRoute>
+                  }
+                >
+                  <Route path="" element={<Navigate to='info' />} />
+                  <Route path="info" element={<PersonalInfo />} />
+                  <Route path="login-history" element={<LoginHistory />} />
+                  <Route path="active-sessions" element={<ActiveSessions />} />
+                  <Route path="connected-apps" element={<ConnectedApps />} />
+                  <Route path="security" element={<Security />} />
+                </Route>
+
+                <Route path="notifications" element={<AllNotification />} />
+
+                <Route
+                  path="insights"
+                  element={
+                    <PrivateRoute>
+                      <Dashboard />
+                    </PrivateRoute>
+                  }
+                />
+                {/* <Route
                 path="organization"
                 element={
                   <PrivateRoute>
@@ -112,49 +115,59 @@ function App() {
                 }
               /> */}
 
-              <Route
-                path="users"
-                element={
-                  <PrivateRoute>
-                    <Users />
-                  </PrivateRoute>
-                }
-              />
+                <Route
+                  path="users"
+                  element={
+                    <PrivateRoute>
+                      <Users />
+                    </PrivateRoute>
+                  }
+                />
 
-              <Route
-                path="apps"
-                element={
-                  <PrivateRoute>
-                    <Apps />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="settings"
-                element={
-                  <PrivateRoute>
-                    <Settings />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="settings/organization"
-                element={
-                  <PrivateRoute>
-                    <Settings />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="*"
-                element={
-                  <PrivateRoute>
-                    <Navigate to="/dashboard/home" />
-                  </PrivateRoute>
-                }
-              />
-            </Route>
-          </Routes>
+                <Route
+                  path="organization/new"
+                  element={
+                    <PrivateRoute>
+                      <NewOrganization />
+                    </PrivateRoute>
+                  }
+                />
+
+                <Route
+                  path="apps"
+                  element={
+                    <PrivateRoute>
+                      <Apps />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="settings"
+                  element={
+                    <PrivateRoute>
+                      <Settings />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="settings/organization"
+                  element={
+                    <PrivateRoute>
+                      <Settings />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="*"
+                  element={
+                    <PrivateRoute>
+                      <Navigate to="/dashboard/home" />
+                    </PrivateRoute>
+                  }
+                />
+              </Route>
+            </Routes>
+          </NotificationContextProvider>
         </UserAuthContextProvider>
       </BrowserRouter>
       <Toaster

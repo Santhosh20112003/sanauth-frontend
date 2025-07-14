@@ -92,6 +92,7 @@ function Navbar() {
         <div className="flex justify-between items-center h-full">
           {/* Left section - Logo & Organization */}
           <div className="flex items-center gap-2">
+            
             <div className="flex items-center">
               <Link to="/dashboard/home" className="flex items-center">
                 <div className="bg-white px-3 py-1.5 rounded-md shadow-sm flex items-center gap-2">

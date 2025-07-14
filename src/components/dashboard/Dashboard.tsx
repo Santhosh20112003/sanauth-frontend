@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import {
   RiUserLine, RiShieldCheckLine, RiTimeLine, RiAlertLine, RiArrowUpLine, RiArrowDownLine,
   RiSearchLine, RiDashboardLine, RiApps2Line, RiBarChart2Line, RiPieChart2Line,
@@ -24,6 +24,8 @@ function Dashboard() {
 
   const [lastUpdate] = useState(new Date());
   const [activeTab, setActiveTab] = useState('overview');
+
+
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -244,18 +246,18 @@ function Dashboard() {
                 <span>User density</span>
               </div>
             </div>
-            
+
             {/* Google Maps Container using iframe */}
             <div className="h-48 brightness-90 rounded-lg overflow-hidden relative" id="google-map">
-              <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d60513047.93491754!2d-31.9!3d27!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sus!4v1699385179777!5m2!1sen!2sus" 
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d60513047.93491754!2d-31.9!3d27!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sus!4v1699385179777!5m2!1sen!2sus"
                 className="absolute inset-0 w-full h-full border-0"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
                 title="User Geography Map"
                 allowFullScreen
               ></iframe>
-              
+
               {/* Legend overlay - will be shown over the map */}
               <div className="absolute bottom-2 right-2 bg-white rounded px-2 py-1 text-xs text-gray-600 shadow-sm z-10">
                 <div className="flex items-center">
@@ -264,7 +266,7 @@ function Dashboard() {
                 </div>
               </div>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-3 mt-3">
               <div className="p-2 rounded bg-gray-50">
                 <p className="text-xs text-gray-500">Top Region</p>

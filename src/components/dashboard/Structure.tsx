@@ -3,9 +3,11 @@ import Navbar from './Navbar'
 import { Outlet } from 'react-router-dom'
 import { useEffect } from 'react';
 import { useUserAuth } from '../context/UserAuthContext';
+import { useNotification } from '../context/NotificationContext';
 
 function Structure() {
-    const { getUserDetails } = useUserAuth();
+    const { getUserDetails, user } = useUserAuth();
+    const { connect, publish } = useNotification();
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -18,6 +20,23 @@ function Structure() {
 
         fetchUserData();
     }, []);
+
+    useEffect(() => {
+        if (user?.email) {
+            try {
+                console.log('Attempting to connect websocket...');
+                connect();
+            } catch (error) {
+                console.error('WebSocket connection failed:', error);
+            }
+        }
+        const timer = setInterval(() => {
+            console.log('Fetching new data...');
+            publish("shanmugamsanthosh22@gmail.com", "Hello There");
+        }, 6000);
+        return () => clearInterval(timer);
+
+    }, [user]);
 
     return (
         <div className="w-full h-screen ">
