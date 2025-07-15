@@ -1,14 +1,16 @@
 import { createContext, useContext, useRef, useState, useCallback, useEffect } from "react";
 import type { ReactNode } from 'react';
-import SockJS from 'sockjs-client';
+// import SockJS from 'sockjs-client'; ❌ Removed SockJS
 import { Stomp } from '@stomp/stompjs';
 import { useUserAuth } from "./UserAuthContext";
+import toast from "react-hot-toast";
 
 interface NotificationContextType {
     notifications: Notification[];
     connectionStatus: string;
     connect: () => void;
     publish: (destination: string, message: string) => boolean;
+    revokeaccess: () => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -31,12 +33,12 @@ export function NotificationContextProvider({ children }: NotificationContextPro
         if (stompClient.current?.connected || !user?.email) return;
 
         try {
-            const socket = new SockJS('http://localhost:9090/ws');
-            stompClient.current = Stomp.over(socket);
+            const socketUrl = 'ws://localhost:9001/ws'; // ✅ Native WebSocket
+            stompClient.current = Stomp.over(() => new WebSocket(socketUrl));
 
             const connectCallback = () => {
                 setConnectionStatus('Connected');
-                stompClient.current.subscribe(`/topic/${user.email}`, handleMessage);
+                stompClient.current.subscribe(`/topic/notification/${user.email}`, handleMessage);
             };
 
             stompClient.current.connect({}, connectCallback, handleError);
@@ -46,9 +48,49 @@ export function NotificationContextProvider({ children }: NotificationContextPro
         }
     };
 
+    const revokeaccess = () => {
+        if (stompClient.current?.connected || !user?.email) return;
+
+        try {
+            const socketUrl = 'ws://localhost:9001/ws'; // ✅ Native WebSocket
+            stompClient.current = Stomp.over(() => new WebSocket(socketUrl));
+
+            const connectCallback = () => {
+                setConnectionStatus('Connected');
+                stompClient.current.subscribe(`/revoke/${user.email}`, handleLogout);
+            };
+
+            stompClient.current.connect({}, connectCallback, handleError);
+        } catch (error) {
+            console.error('Connection error:', error);
+            setConnectionStatus('Error');
+        }
+    };
+
+    const handleLogout = (message: any) => {
+        try {
+            console.log('Received logout message:', message);
+            const tokenid = message.body;
+            if (tokenid) {
+                if (tokenid === localStorage.getItem('token') || tokenid === sessionStorage.getItem('token')) {
+                    localStorage.removeItem('token');
+                    sessionStorage.removeItem('token');
+                    toast.dismiss();
+                    toast.error('Session expired. Please log in again.');
+                    window.location.href = '/login';
+                    setConnectionStatus('Disconnected');
+                    stompClient.current.disconnect();
+                }
+            }
+
+        } catch (error) {
+            console.error('Failed to process logout message:', error);
+        }
+    }
+
     const handleMessage = (message: any) => {
         try {
-            console.log('Received message:', JSON.parse(message.body));
+            console.log('Received message:', message);
             const notification = { message: message.body };
             setNotifications(prev => [notification, ...prev]);
         } catch (error) {
@@ -82,7 +124,6 @@ export function NotificationContextProvider({ children }: NotificationContextPro
         }
     };
 
-
     useEffect(() => {
         return () => {
             if (stompClient.current?.connected) {
@@ -93,7 +134,7 @@ export function NotificationContextProvider({ children }: NotificationContextPro
     }, []);
 
     return (
-        <NotificationContext.Provider value={{ notifications, connectionStatus, connect, publish }}>
+        <NotificationContext.Provider value={{ notifications, connectionStatus, connect, publish, revokeaccess }}>
             {children}
         </NotificationContext.Provider>
     );

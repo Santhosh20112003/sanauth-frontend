@@ -7,7 +7,7 @@ import { useNotification } from '../context/NotificationContext';
 
 function Structure() {
     const { getUserDetails, user } = useUserAuth();
-    const { connect, publish } = useNotification();
+    const { connect, publish,revokeaccess } = useNotification();
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -35,6 +35,19 @@ function Structure() {
             publish("shanmugamsanthosh22@gmail.com", "Hello There");
         }, 6000);
         return () => clearInterval(timer);
+
+    }, [user]);
+
+
+    useEffect(() => {
+        if (user?.email) {
+            try {
+                console.log('Attempting to connect websocket...');
+                revokeaccess();
+            } catch (error) {
+                console.error('WebSocket connection failed:', error);
+            }
+        }
 
     }, [user]);
 
