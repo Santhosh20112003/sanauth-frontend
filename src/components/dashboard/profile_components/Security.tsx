@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import request from '../../config/axios_config';
 import toast from 'react-hot-toast';
 import { useUserAuth } from '../../context/UserAuthContext';
+import MfaAuth from './MfaAuth';
 
 interface SecurityProps {
   standalone?: boolean;
@@ -291,38 +292,7 @@ const Security: React.FC<SecurityProps> = ({ standalone = false }) => {
           </form>
         </div>
 
-        {/* Two-Factor Authentication */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center mb-6">
-            <RiShieldCheckLine className="w-5 h-5 text-gray-700 mr-2" />
-            <h2 className="text-lg font-semibold text-gray-800">Two-Factor Authentication</h2>
-          </div>
-
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-sm text-gray-500 mb-1">
-                Add an extra layer of security to your account.
-              </p>
-              <p className="text-xs text-gray-400">
-                You'll need to enter a code from your phone in addition to your password.
-              </p>
-            </div>
-            <div>
-              <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm">
-                Reconfigure 2FA
-              </button>
-            </div>
-          </div>
-
-          <div className="flex items-center">
-            <span className="text-xs bg-green-100 text-green-800 rounded-full px-3 py-1 mr-3 flex items-center">
-              <RiCheckLine className="mr-1" /> Enabled
-            </span>
-            <p className="text-sm text-gray-800">
-              Your account is protected by two-factor authentication.
-            </p>
-          </div>
-        </div>
+        <MfaAuth />
       </div>
     </div>
   );

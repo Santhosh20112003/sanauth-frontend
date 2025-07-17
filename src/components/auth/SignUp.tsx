@@ -71,9 +71,16 @@ function SignUp() {
                 toast.success('Account created successfully!');
                 navigate("/login");
             }
-        } catch (error) {
-            console.error('Signup failed:', error);
-            toast.error('Registration failed. Please try again.');
+
+        } catch (error: any) {
+            console.error("Error during registration:", error);
+            if( error.response && error.response.status === 409) {
+                toast.error('Email already exists. Please try a different email.');
+            }
+            else{
+                toast.error('Registration failed. Please try again.');
+            }
+            
         } finally {
             setIsLoading(false);
         }

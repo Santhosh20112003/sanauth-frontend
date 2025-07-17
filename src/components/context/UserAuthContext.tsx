@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import request from "../config/axios_config";
 import { v4 as uuidv4 } from 'uuid';
 import { useNavigate } from "react-router-dom";
+import * as UAParser from 'ua-parser-js';
 
 const userAuthContext = createContext<any | undefined>(undefined);
 
@@ -12,6 +13,8 @@ interface UserAuthContextProviderProps {
 
 export function UserAuthContextProvider({ children }: UserAuthContextProviderProps) {
   const navigate = useNavigate();
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
   const [user, setUser] = useState<any>({
     uid: "",
     email: "",
@@ -22,6 +25,25 @@ export function UserAuthContextProvider({ children }: UserAuthContextProviderPro
     lastLogin: new Date().toISOString(),
     active: false
   });
+  const [settings, setSettings] = useState<any>({});
+
+
+  const getLoginMetaData = async () => {
+    const ipRes = await fetch('https://ipapi.co/json');
+    const ipData = await ipRes.json();
+
+    const parser = new UAParser.UAParser();
+    const deviceInfo = `${parser.getBrowser().name} on ${parser.getOS().name}`;
+
+    const payload = {
+      loginTime: new Date().toISOString(),
+      deviceInfo: deviceInfo,
+      ipAddress: ipData.ip,
+      location: `${ipData.city}, ${ipData.region}`
+    };
+    console.log('Login Metadata:', payload);
+    return payload;
+  }
 
   const getLoginSessions = async () => {
     const response = await request.get('/api/users/get/login/sessions');
@@ -55,9 +77,22 @@ export function UserAuthContextProvider({ children }: UserAuthContextProviderPro
       return response;
     }
     catch (error) {
-      console.error("Error creating new user:", error);
+      throw error; // Re-throw the error to handle it in the calling component
     }
   }
+
+  const getSettings = async () => {
+    try {
+      const response = await request.get('/api/users/get/settings');
+      setSettings(response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching user settings:", error);
+      throw error;
+    }
+  }
+
+
 
   const SignOut = () => {
     setUser({
@@ -81,7 +116,15 @@ export function UserAuthContextProvider({ children }: UserAuthContextProviderPro
     getLoginSessions,
     getUserDetails,
     createNewUser,
-    SignOut
+    SignOut,
+    email,
+    setEmail,
+    password,
+    setPassword,
+    getLoginMetaData,
+    getSettings,
+    settings,
+    setSettings
   };
 
 

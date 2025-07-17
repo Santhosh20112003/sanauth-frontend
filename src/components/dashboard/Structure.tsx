@@ -6,8 +6,8 @@ import { useUserAuth } from '../context/UserAuthContext';
 import { useNotification } from '../context/NotificationContext';
 
 function Structure() {
-    const { getUserDetails, user } = useUserAuth();
-    const { connect, publish,revokeaccess } = useNotification();
+    const { getUserDetails, user, getSettings } = useUserAuth();
+    const { connect, publish, revokeaccess } = useNotification();
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -36,7 +36,7 @@ function Structure() {
         }, 6000);
         return () => clearInterval(timer);
 
-    }, [user]);
+    }, []);
 
 
     useEffect(() => {
@@ -49,7 +49,18 @@ function Structure() {
             }
         }
 
-    }, [user]);
+    }, []);
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                await getSettings();
+            } catch (err) {
+                console.error('Error fetching settings:', err);
+            }
+        };
+        fetchSettings();
+    }, []);
 
     return (
         <div className="w-full h-screen ">

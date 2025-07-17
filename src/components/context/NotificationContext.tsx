@@ -119,7 +119,7 @@ export function NotificationContextProvider({ children }: NotificationContextPro
             });
             return true;
         } catch (error) {
-            console.error('Publish error:', error);
+            console.error('Publish error:', error); 
             return false;
         }
     };

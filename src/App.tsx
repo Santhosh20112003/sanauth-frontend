@@ -11,7 +11,6 @@ import Apps from "./components/dashboard/Apps"
 import GettingStarted from "./components/dashboard/GettingStarted"
 import Profile from "./components/dashboard/Profile"
 import Settings from "./components/dashboard/Settings"
-import Organization from "./components/dashboard/Organization"
 import Verify from "./components/auth/Verify"
 import ForgetPassword from "./components/auth/ForgetPassword"
 import { UserAuthContextProvider } from "./components/context/UserAuthContext"
@@ -23,6 +22,7 @@ import ActiveSessions from "./components/dashboard/profile_components/ActiveSess
 import { AllNotification } from "./components/dashboard/notification_components/AllNotification"
 import NewOrganization from "./components/dashboard/organization_components/NewOrganization"
 import { NotificationContextProvider } from "./components/context/NotificationContext"
+import MagicLink from "./components/auth/MagicLink"
 
 
 function App() {
@@ -52,11 +52,18 @@ function App() {
                 }
               />
               <Route
+                path="magic-link/:token"
+                element={
+                  <MagicLink />
+                }
+              />
+              <Route
                 path="forget-password"
                 element={
                   <ForgetPassword />
                 }
               />
+
               <Route
                 path="verify/:email"
                 element={
