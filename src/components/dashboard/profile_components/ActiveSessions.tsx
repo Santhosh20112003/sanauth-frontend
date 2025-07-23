@@ -1,6 +1,9 @@
-import React from 'react';
-import { RiArrowLeftLine } from 'react-icons/ri';
+import React, { useEffect, useState } from 'react';
+import { RiArrowLeftLine, RiWindowsFill, RiAndroidFill, RiAppleFill, RiChromeFill, RiFirefoxFill, RiSafariFill, RiEdgeFill, RiOperaFill } from 'react-icons/ri';
+import { FaLinux } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import request from '../../config/axios_config';
+import { useUserAuth } from '../../context/UserAuthContext';
 
 interface Session {
   id: string;
@@ -9,6 +12,15 @@ interface Session {
   ip: string;
   lastActive: string;
   current: boolean;
+}
+
+interface ApiSession {
+  email: string;
+  token: string;
+  loginTime: string;
+  deviceInfo: string;
+  ipAddress: string;
+  location: string;
 }
 
 interface ActiveSessionsProps {
@@ -35,78 +47,167 @@ const getTimeSince = (dateString: string): string => {
   }
 };
 
+const getDeviceIcon = (deviceInfo: string) => {
+  const info = deviceInfo.toLowerCase();
+  
+  // OS Icons
+  if (info.includes('windows')) return <RiWindowsFill className="mr-2 text-[#00A4EF]" />;
+  if (info.includes('mac') || info.includes('ios')) return <RiAppleFill className="mr-2 text-[#555555]" />;
+  if (info.includes('android')) return <RiAndroidFill className="mr-2 text-[#3DDC84]" />;
+  if (info.includes('linux')) return <FaLinux className="mr-2 text-[#FCC624]" />;
+
+  // Browser Icons (if no OS match)
+  if (info.includes('chrome')) return <RiChromeFill className="mr-2 text-[#4285F4]" />;
+  if (info.includes('firefox')) return <RiFirefoxFill className="mr-2 text-[#FF7139]" />;
+  if (info.includes('safari')) return <RiSafariFill className="mr-2 text-[#000000]" />;
+  if (info.includes('edge')) return <RiEdgeFill className="mr-2 text-[#0078D7]" />;
+  if (info.includes('opera')) return <RiOperaFill className="mr-2 text-[#FF1B2D]" />;
+
+  return null;
+};
+
+const isCurrentSession = (sessionToken: string): boolean => {
+  const currentToken = localStorage.getItem('token') || sessionStorage.getItem('token');
+  return sessionToken === currentToken;
+};
+
 const SessionItem: React.FC<{
   session: Session;
   onRevoke: (id: string) => void;
-}> = ({ session, onRevoke }) => (
-  <div
-    className={`p-4 rounded-lg border ${session.current ? 'border-[#67c6ff] bg-[#67c6ff]/5' : 'border-gray-200'}`}
-  >
-    <div className="flex justify-between">
-      <div>
-        <div className="flex items-center">
-          <h3 className="font-medium text-gray-800">{session.device}</h3>
-          {session.current && (
-            <span className="ml-2 text-xs bg-[#67c6ff]/10 text-[#67c6ff] px-2 py-0.5 rounded-full">
-              Current Session
-            </span>
-          )}
+  isRevoking: string | null;
+}> = ({ session, onRevoke, isRevoking }) => {
+  const isCurrentActive = isCurrentSession(session.id);
+  
+  return (
+    <div className={`p-4 rounded-lg border ${isCurrentActive ? 'border-blue-200' : 'border-gray-200'}`}>
+      <div className="flex justify-between items-start">
+        <div className="flex-1">
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center">
+              {getDeviceIcon(session.device)}
+              <h3 className="font-medium text-gray-900">{session.device}</h3>
+            </div>
+            {isCurrentActive && (
+              <div className="flex items-center px-2 py-1 bg-blue-50 border border-blue-100 rounded-full">
+                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-1.5"></div>
+                <span className="text-xs font-medium text-blue-700">This Device</span>
+              </div>
+            )}
+          </div>
+          
+          <div className={`mt-2 flex flex-col gap-1 ${isCurrentActive ? 'text-blue-900/70' : 'text-gray-500'}`}>
+            <div className="text-sm flex items-center gap-2">
+              <div className="flex items-center">
+                {isCurrentActive && '📍 '}
+                {session.location}
+              </div>
+              <span className="text-gray-300">•</span>
+              <div>IP: {session.ip}</div>
+            </div>
+            <div className="text-xs">
+              <span className={`font-medium ${isCurrentActive ? 'text-blue-600' : ''}`}>
+                Last active:
+              </span>{' '}
+              {getTimeSince(session.lastActive)}
+            </div>
+          </div>
         </div>
-        <div className="text-sm text-gray-500 mt-1">
-          {session.location} • IP: {session.ip}
-        </div>
-        <div className="text-xs text-gray-500 mt-0.5">
-          <span className="font-medium">Last active:</span> {getTimeSince(session.lastActive)}
-        </div>
-      </div>
 
-      {!session.current && (
-        <button
-          onClick={() => onRevoke(session.id)}
-          className="text-sm text-red-600 hover:text-red-700"
-          aria-label={`Revoke session on ${session.device}`}
-        >
-          Revoke
-        </button>
-      )}
+        {!isCurrentActive && (
+          <button
+            onClick={() => onRevoke(session.id)}
+            disabled={isRevoking === session.id}
+            className={`text-sm px-3 py-1.5 rounded-md transition-all ${
+              isRevoking === session.id 
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'text-red-600 hover:bg-red-50 hover:shadow-sm active:bg-red-100'
+            }`}
+            aria-label={`Revoke session on ${session.device}`}
+          >
+            {isRevoking === session.id ? 'Revoking...' : 'Revoke'}
+          </button>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const ActiveSessions: React.FC<ActiveSessionsProps> = () => {
-
-  const sessions = [
-    {
-      id: '1',
-      device: 'MacBook Pro',
-      location: 'New York, USA',
-      ip: '172. 16.254.1',
-      lastActive: '2023-10-01T12:34:56Z',
-      current: true,
-    },
-    {
-      id: '2',
-      device: 'iPhone 14',
-      location: 'San Francisco, USA',
-      ip: '192. 168.1.1',
-      lastActive: '2023-10-02T08:20:30Z',
-      current: false,
-    },
-    {
-      id: '3',
-      device: 'Windows Desktop',
-      location: 'London, UK',
-      ip: '192. 168.1.2',
-      lastActive: '2023-10-03T15:45:00Z',
-      current: false,
-    }
-  ];
-  const onRevokeSession = () => {
-    console.log('Revoke session function not provided');
-  };
-  const onRevokeAllOtherSessions = () => console.log('Revoke all sessions function not provided');
+  const { SignOut } = useUserAuth();
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRevoking, setIsRevoking] = useState<string | null>(null);
   const standalone = false;
-  const isLoading = false;
+
+  useEffect(() => {
+    const fetchSessions = async () => {
+      try {
+        const response = await request.post("/api/users/get/session/list");
+        const data: ApiSession[] = response.data;
+        
+        if (!data) {
+          setSessions([]);
+          return;
+        }
+
+        const transformedSessions = data.map(session => ({
+          id: session.token,
+          device: session.deviceInfo,
+          location: session.location,
+          ip: session.ipAddress,
+          lastActive: session.loginTime,
+          current: isCurrentSession(session.token)
+        }))
+        // Sort sessions to put current session first
+        .sort((a, b) => {
+          if (a.current) return -1;
+          if (b.current) return 1;
+          return new Date(b.lastActive).getTime() - new Date(a.lastActive).getTime();
+        });
+
+        setSessions(transformedSessions);
+      } catch (error) {
+        console.error('Failed to fetch sessions:', error);
+        setSessions([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSessions();
+  }, []);
+
+  const onRevokeSession = async (sessionId: string) => {
+    try {
+      setIsRevoking(sessionId);
+      const response = await request.post(`/api/users/revoke/${sessionId}`);
+      
+      if (response.data?.message === "Revoked successful") {
+        // Remove the session from the list
+        setSessions(prevSessions => 
+          prevSessions.filter(session => session.id !== sessionId)
+        );
+        
+        // Only call SignOut if it's the current session
+        const currentToken = localStorage.getItem('token') || sessionStorage.getItem('token');
+        if (sessionId === currentToken) {
+          await SignOut(sessionId);
+        }
+      } else {
+        throw new Error("Revocation failed");
+      }
+    } catch (error) {
+      console.error('Failed to revoke session:', error);
+    } finally {
+      setIsRevoking(null);
+    }
+  };
+
+  const onRevokeAllOtherSessions = async () => {
+    // TODO: Implement revoke all sessions API call
+    console.log('Revoking all other sessions');
+  };
+
   const hasOtherSessions = sessions.some(session => !session.current);
 
   return (
@@ -141,6 +242,7 @@ const ActiveSessions: React.FC<ActiveSessionsProps> = () => {
                 key={session.id}
                 session={session}
                 onRevoke={onRevokeSession}
+                isRevoking={isRevoking}
               />
             ))}
           </div>
@@ -161,5 +263,6 @@ const ActiveSessions: React.FC<ActiveSessionsProps> = () => {
     </div>
   );
 };
+
 
 export default ActiveSessions;

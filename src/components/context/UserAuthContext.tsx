@@ -93,22 +93,34 @@ export function UserAuthContextProvider({ children }: UserAuthContextProviderPro
   }
 
 
+  // ...existing code...
 
-  const SignOut = () => {
-    setUser({
-      uid: "",
-      email: "",
-      name: "",
-      photoURL: "",
-      role: "",
-      createdAt: new Date().toISOString(),
-      lastLogin: new Date().toISOString(),
-      active: false
-    });
-    localStorage.removeItem('token');
-    sessionStorage.removeItem('token');
-    navigate('/login');
-  }
+  const SignOut = async () => {
+    try {
+      // Get the current token
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+
+      if (token) {
+        await request.post('/api/users/logout');
+      }
+    } catch (error) {
+      console.error("Error revoking session:", error);
+    } finally {
+      setUser({
+        uid: "",
+        email: "",
+        name: "",
+        photoURL: "",
+        role: "",
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString(),
+        active: false
+      });
+      localStorage.removeItem('token');
+      sessionStorage.removeItem('token');
+      navigate('/login');
+    }
+  };
 
   const contextValue: any = {
     user,

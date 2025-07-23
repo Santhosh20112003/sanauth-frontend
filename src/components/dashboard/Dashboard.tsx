@@ -25,8 +25,6 @@ function Dashboard() {
   const [lastUpdate] = useState(new Date());
   const [activeTab, setActiveTab] = useState('overview');
 
-
-
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       {/* Simplified Header */}
